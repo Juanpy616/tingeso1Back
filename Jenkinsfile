@@ -7,7 +7,7 @@ pipeline {
     tools{
 
 
-        maven 'maven_3_9_9'
+        maven "maven"
 
 
     }
