@@ -25,15 +25,7 @@ pipeline {
                 }
             }
         }
-        stage('Push image to Docker Hub'){
-            steps{
-                script{
-                   withCredentials([string(credentialsId: 'docker', variable: 'dhpsw')]) {
-                        bat 'docker login -u juanpy616 -p %dhpsw%'
-                   }
-                   bat 'docker push juanpy616/tgs1back:latest'
-                }
-            }
+
         }
     }
 }
