@@ -31,6 +31,7 @@ pipeline {
                     }
                 }
                 bat 'docker push juanpy616/tgs1back:latest'
+                bat 'docker logout'
             }
         }
     }
