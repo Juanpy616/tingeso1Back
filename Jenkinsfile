@@ -29,9 +29,8 @@ pipeline {
                     withCredentials([string(credentialsId: 'dockerhubpassword', variable: 'dockerpass')]) {
                         bat 'docker login -u juanpy616 -p %dockerpass%'
                     }
-                   }
-                   bat 'docker push juanpy616/tgs1back:latest'
                 }
+                bat 'docker push juanpy616/tgs1back:latest'
             }
         }
     }
