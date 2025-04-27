@@ -22,7 +22,7 @@ pipeline {
             steps{
 
 
-                checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/Juanpy616/tingeso1Back']])
+                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/Juanpy616/tingeso1Back']])
 
 
                 bat 'mvn clean package'
