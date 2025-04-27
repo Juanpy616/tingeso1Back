@@ -27,7 +27,7 @@ pipeline {
             steps{
                 script{
                     withCredentials([string(credentialsId: 'dockerhubpassword', variable: 'dockerpass')]) {
-                        bat 'docker login -u juanpy616 -p %dhpsw%'
+                        bat 'docker login -u juanpy616 -p %dockerpass%'
                     }
                    }
                    bat 'docker push juanpy616/tgs1back:latest'
