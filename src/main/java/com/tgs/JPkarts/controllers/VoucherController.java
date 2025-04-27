@@ -1,11 +1,10 @@
 package com.tgs.JPkarts.controllers;
 
-import com.tgs.JPkarts.entities.ReservationEntity;
+
 import com.tgs.JPkarts.entities.VoucherEntity;
 import com.tgs.JPkarts.services.VoucherService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

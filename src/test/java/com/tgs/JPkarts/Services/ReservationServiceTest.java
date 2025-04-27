@@ -3,14 +3,15 @@ package com.tgs.JPkarts.Services;
 import com.tgs.JPkarts.entities.ReservationEntity;
 import com.tgs.JPkarts.services.ReservationService;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 
 import java.time.LocalTime;
-import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class ReservationServiceTest {
 
+    @Mock
     ReservationService reservationService = new ReservationService();
     ReservationEntity reservation = new ReservationEntity();
 

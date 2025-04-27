@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Month;
-import java.time.Year;
 
 @Entity
 @Table(name = "analyitics")
