@@ -1,5 +1,6 @@
 package com.tgs.JPkarts.controllers;
 
+import com.tgs.JPkarts.entities.ReservationEntity;
 import com.tgs.JPkarts.entities.VoucherEntity;
 import com.tgs.JPkarts.services.VoucherService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,9 +30,15 @@ public class VoucherController {
     }
 
     @PostMapping("/")
-    public ResponseEntity<VoucherEntity> createVoucher(@RequestBody VoucherEntity voucher) {
-        VoucherEntity newVoucher = voucherService.saveVoucher(voucher);
-        return ResponseEntity.ok(newVoucher);
+    public ResponseEntity<VoucherEntity> createVoucher(@RequestBody VoucherEntity voucher){
+        VoucherEntity voucherNew = voucherService.saveVoucher(voucher);
+        return ResponseEntity.ok(voucherNew);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<VoucherEntity> updateVoucher(@RequestBody VoucherEntity voucher) {
+        VoucherEntity updatedVoucher = voucherService.updateVoucher(voucher);
+        return ResponseEntity.ok(updatedVoucher);
     }
 
     @DeleteMapping("/{id}")

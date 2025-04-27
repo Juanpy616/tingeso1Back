@@ -32,7 +32,4 @@ public class ReservationEntity  {
     private LocalTime endTime;
     private int quantity;//Cantidad de personas que reservan
     private String clientName;//Nombre de quien paga
-    @ElementCollection
-    private List<String> mails;//Correos de los integrantes del grupo
-
 }

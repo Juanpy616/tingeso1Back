@@ -28,11 +28,15 @@ public class VoucherService {
     public List<VoucherEntity> getAllVouchers() {return voucherRepository.findAll();}
 
     public VoucherEntity saveVoucher(VoucherEntity voucher) {
+        voucher.setId(null);
         ReservationEntity reservation = reservationRepository.findById(voucher.getReservationId()).get();
         setBasePrice(voucher, reservation);
         calcDiscounts(voucher, reservation);
+        applyDiscounts(voucher);
         return voucherRepository.save(voucher);
     }
+
+    public VoucherEntity updateVoucher(VoucherEntity voucher) { return voucherRepository.save(voucher);}
 
     public VoucherEntity getVoucherById(long id) {return voucherRepository.findById(id).get();}
 
@@ -116,6 +120,13 @@ public class VoucherService {
         else{
             voucher.setSpecialDiscount(discountByVisits(voucher));
         }
+    }
+
+    public void applyDiscounts(VoucherEntity voucher) {
+        voucher.setPriceAfterDiscount(voucher.getBasePrice()-(voucher.getSpecialDiscount()+voucher.getSizeDiscount()));
+        voucher.setIva((int)round(0.19*voucher.getPriceAfterDiscount()));
+        voucher.setFinalPrice(voucher.getPriceAfterDiscount()+voucher.getIva());
+        return;
     }
 }
 

@@ -37,6 +37,7 @@ public class ReservationService {
 
     public ReservationEntity updateReservation(ReservationEntity reservation) {
         //Se borran todos los vouchers relacionados con la reserva
+        setEndTime(reservation);
         List<VoucherEntity> vouchers = voucherRepository.findByReservationId(reservation.getId());
         voucherRepository.deleteAll(vouchers);
         return reservationRepository.save(reservation);

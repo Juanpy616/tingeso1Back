@@ -9,10 +9,5 @@ import java.util.List;
 
 @Repository
 public interface ReservationRepository extends JpaRepository<ReservationEntity, Long> {
-    public List<ReservationEntity> findByClientName(String clientName);
-
-    List<ReservationEntity> findByDateBetween(Date dateAfter, Date dateBefore);
     public void deleteById(Long id);
-
-
 }
