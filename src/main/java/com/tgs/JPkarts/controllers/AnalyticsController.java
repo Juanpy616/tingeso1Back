@@ -13,7 +13,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/tgs/rmkarts/analytics")
-@CrossOrigin("*")
 public class AnalyticsController {
     @Autowired
     private AnalyticsService analyticsService;

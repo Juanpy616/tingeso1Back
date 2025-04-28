@@ -11,7 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/tgs/rmkarts/reservation")
-@CrossOrigin("*")
 public class ReservationController {
     @Autowired
     ReservationService reservationService;

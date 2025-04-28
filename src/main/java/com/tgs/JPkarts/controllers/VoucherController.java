@@ -11,7 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/tgs/rmkarts/voucher")
-@CrossOrigin("*")
 public class VoucherController {
     @Autowired
     VoucherService voucherService;
