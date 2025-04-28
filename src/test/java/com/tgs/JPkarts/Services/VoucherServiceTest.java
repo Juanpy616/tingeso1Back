@@ -149,4 +149,57 @@ class VoucherServiceTest {
         assertEquals(3230, testVoucher.getIva()); // 19% of 17000
         assertEquals(20230, testVoucher.getFinalPrice()); // 17000 + 3230
     }
+
+    @Test
+    void saveVoucher_ShouldCalculatePricesAndSaveCorrectly() {
+        // Arrange
+        VoucherEntity voucherToSave = new VoucherEntity();
+        voucherToSave.setReservationId(1L);
+        voucherToSave.setClientName("Test Client");
+        voucherToSave.setClientEmail("test@example.com");
+        voucherToSave.setBasePrice(0); // Se calculará automáticamente
+
+        ReservationEntity reservation = new ReservationEntity();
+        reservation.setId(1L);
+        reservation.setDuration(30); // 30 minutos = precio base 15000
+        reservation.setQuantity(4);  // Grupo mediano = 10% descuento
+
+        // Configurar mocks
+        when(reservationRepository.findById(1L)).thenReturn(Optional.of(reservation));
+        when(voucherRepository.save(any(VoucherEntity.class))).thenAnswer(invocation -> {
+            VoucherEntity v = invocation.getArgument(0);
+            v.setId(1L); // Simular ID generado
+            return v;
+        });
+
+        // Act
+        VoucherEntity savedVoucher = voucherService.saveVoucher(voucherToSave);
+
+        // Assert
+        assertNotNull(savedVoucher);
+        assertNotNull(savedVoucher.getId());
+
+        // Verificar precios calculados
+        assertEquals(15000, savedVoucher.getBasePrice()); // Precio base para 30 mins
+        assertEquals(1500, savedVoucher.getSizeDiscount()); // 10% de 15000
+        assertTrue(savedVoucher.getSpecialDiscount() >= 0); // Descuento por visitas
+
+        // Verificar precios finales
+        int expectedPriceAfterDiscount = savedVoucher.getBasePrice() -
+                savedVoucher.getSizeDiscount() -
+                savedVoucher.getSpecialDiscount();
+        assertEquals(expectedPriceAfterDiscount, savedVoucher.getPriceAfterDiscount());
+
+        // Verificar IVA (19%)
+        assertEquals((int)Math.round(savedVoucher.getPriceAfterDiscount() * 0.19), savedVoucher.getIva());
+
+        // Verificar precio final
+        assertEquals(savedVoucher.getPriceAfterDiscount() + savedVoucher.getIva(),
+                savedVoucher.getFinalPrice());
+
+        // Verificar interacciones con repositorios
+        verify(reservationRepository, times(1)).findById(1L);
+        verify(voucherRepository, times(1)).save(any(VoucherEntity.class));
+    }
+
 }

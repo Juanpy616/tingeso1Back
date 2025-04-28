@@ -16,9 +16,15 @@ import java.util.List;
 @Service
 public class AnalyticsService {
     @Autowired
+    ReservationService reservationService;
+    @Autowired
+    VoucherService voucherService;
+    @Autowired
     AnalyticsRepository analyticsRepository;
     @Autowired
     ReservationRepository reservationRepository;
+    @Autowired
+    VoucherRepository voucherRepository;
 
     public List<AnalyticsEntity> getAllAnalytics() { return analyticsRepository.findAll();}
 
@@ -28,13 +34,13 @@ public class AnalyticsService {
         Month month = reservation.getDate().getMonth();
         int year = reservation.getDate().getYear();
         //Si no existe un Analytics para el mes actual, se crea
-        if (analyticsRepository.findByMonthAndYear(month, year) == null) {
-            AnalyticsEntity analyticsEntity = new AnalyticsEntity();
+        AnalyticsEntity analyticsEntity = analyticsRepository.findByMonthAndYear(month, year);
+        if (analyticsEntity == null) {
+            analyticsEntity = new AnalyticsEntity();
             analyticsEntity.setMonth(month);
             analyticsEntity.setYear(year);
-            analyticsRepository.save(analyticsEntity);
+            analyticsEntity = analyticsRepository.save(analyticsEntity);
         }
-        AnalyticsEntity analyticsEntity = analyticsRepository.findByMonthAndYear(month, year);
         if(reservation.getDuration()==30){
             analyticsEntity.setTenMins(analyticsEntity.getTenMins() + voucher.getPriceAfterDiscount());
         }

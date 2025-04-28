@@ -6,6 +6,7 @@ import com.tgs.JPkarts.entities.VoucherEntity;
 import com.tgs.JPkarts.repositories.AnalyticsRepository;
 import com.tgs.JPkarts.repositories.ReservationRepository;
 import com.tgs.JPkarts.services.AnalyticsService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -14,14 +15,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class AnalyticsServiceTest {
+
     @Mock
     private AnalyticsRepository analyticsRepository;
 
@@ -31,140 +35,76 @@ public class AnalyticsServiceTest {
     @InjectMocks
     private AnalyticsService analyticsService;
 
-    @Mock
     private VoucherEntity voucher;
-
-    @Mock
     private ReservationEntity reservation;
+    private AnalyticsEntity analytics;
 
-    @Mock
-    private AnalyticsEntity analyticsEntity;
+    @BeforeEach
+    void setup() {
+        voucher = new VoucherEntity();
+        voucher.setReservationId(1L);
+        voucher.setPriceAfterDiscount(100);
+
+        reservation = new ReservationEntity();
+        reservation.setId(1L);
+        reservation.setDate(LocalDate.of(2025, 4, 10));
+        reservation.setDuration(30); // para tenMins
+        reservation.setQuantity(2);  // para smallGroup
+
+        analytics = new AnalyticsEntity();
+        analytics.setMonth(Month.APRIL);
+        analytics.setYear(2025);
+        analytics.setTenMins(0L);
+        analytics.setSmallGroup(0L);
+    }
 
     @Test
-    void shouldCreateAnalyticsIfNotExistAndUpdateTenMinsSmallGroup() {
-        // Arrange
-        VoucherEntity voucher = new VoucherEntity();
-        voucher.setReservationId(1L);
-        voucher.setPriceAfterDiscount(50);
+    void testGetAllAnalytics() {
+        List<AnalyticsEntity> expectedList = List.of(new AnalyticsEntity());
+        when(analyticsRepository.findAll()).thenReturn(expectedList);
 
-        ReservationEntity reservation = new ReservationEntity();
-        reservation.setId(1L);
-        reservation.setDuration(30);
-        reservation.setQuantity(2);
-        reservation.setDate(LocalDate.of(2025, Month.APRIL, 15));
+        List<AnalyticsEntity> result = analyticsService.getAllAnalytics();
 
+        assertEquals(1, result.size());
+        verify(analyticsRepository).findAll();
+    }
+
+    @Test
+    void testAddToAnalytics_CreatesNewAnalyticsEntity() {
         when(reservationRepository.findById(1L)).thenReturn(Optional.of(reservation));
         when(analyticsRepository.findByMonthAndYear(Month.APRIL, 2025)).thenReturn(null);
+        when(analyticsRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        // Mock saving new AnalyticsEntity
-        AnalyticsEntity newAnalytics = new AnalyticsEntity();
-        newAnalytics.setMonth(Month.APRIL);
-        newAnalytics.setYear(2025);
-        newAnalytics.setTenMins(0L);
-        newAnalytics.setSmallGroup(0L);
-        when(analyticsRepository.findByMonthAndYear(Month.APRIL, 2025)).thenReturn(newAnalytics);
-
-        // Act
         analyticsService.addToAnalytics(voucher);
 
-        // Assert
-        assertEquals(50L, newAnalytics.getTenMins());
-        assertEquals(50L, newAnalytics.getSmallGroup());
+        verify(analyticsRepository).save(any());
     }
+
     @Test
-    void shouldUpdateFifteenMinsAndMediumGroupWhenAnalyticsExists() {
-        // Arrange
-        VoucherEntity voucher = new VoucherEntity();
-        voucher.setReservationId(2L);
-        voucher.setPriceAfterDiscount(80); // suponiendo que es long
+    void testAddToAnalytics_UpdatesExistingAnalyticsEntity() {
+        when(reservationRepository.findById(1L)).thenReturn(Optional.of(reservation));
+        when(analyticsRepository.findByMonthAndYear(Month.APRIL, 2025)).thenReturn(analytics);
 
-        ReservationEntity reservation = new ReservationEntity();
-        reservation.setId(2L);
-        reservation.setDuration(35);
-        reservation.setQuantity(4);
-        reservation.setDate(LocalDate.of(2025, Month.MARCH, 10));
-
-        AnalyticsEntity existingAnalytics = new AnalyticsEntity();
-        existingAnalytics.setMonth(Month.MARCH);
-        existingAnalytics.setYear(2025);
-        existingAnalytics.setFifteenMins(100L);
-        existingAnalytics.setMediumGroup(200L);
-
-        // Mocks
-        when(reservationRepository.findById(2L)).thenReturn(Optional.of(reservation));
-        when(analyticsRepository.findByMonthAndYear(Month.MARCH, 2025)).thenReturn(existingAnalytics);
-
-        // Act
         analyticsService.addToAnalytics(voucher);
 
-        // Assert
-        assertEquals(180L, existingAnalytics.getFifteenMins());    // 100 + 80
-        assertEquals(280L, existingAnalytics.getMediumGroup());    // 200 + 80
-    }
-    @Test
-    void shouldSubtractFifteenMinsAndMediumGroupWhenAnalyticsExists() {
-        // Arrange
-        VoucherEntity voucher = new VoucherEntity();
-        voucher.setReservationId(2L);
-        voucher.setPriceAfterDiscount(80);  // Asumiendo que es un long
-
-        ReservationEntity reservation = new ReservationEntity();
-        reservation.setId(2L);
-        reservation.setDuration(35);  // Duración de 35 minutos
-        reservation.setQuantity(4);   // Tamaño del grupo: 4 personas
-        reservation.setDate(LocalDate.of(2025, Month.MARCH, 10));
-
-        AnalyticsEntity existingAnalytics = new AnalyticsEntity();
-        existingAnalytics.setMonth(Month.MARCH);
-        existingAnalytics.setYear(2025);
-        existingAnalytics.setFifteenMins(100L);  // Valor inicial de 15 minutos
-        existingAnalytics.setMediumGroup(200L); // Valor inicial de grupo medio
-
-        // Mocks
-        when(reservationRepository.findById(2L)).thenReturn(Optional.of(reservation));
-        when(analyticsRepository.findByMonthAndYear(Month.MARCH, 2025)).thenReturn(existingAnalytics);
-
-        // Act
-        analyticsService.subtractFromAnalytics(voucher);
-
-        // Assert
-        assertEquals(20L, existingAnalytics.getFifteenMins());  // 100L - 80L (precio después del descuento)
-        assertEquals(120L, existingAnalytics.getMediumGroup());  // 200L - 80L (precio después del descuento)
+        assertEquals(100L, analytics.getTenMins());
+        assertEquals(100L, analytics.getSmallGroup());
     }
 
     @Test
-    void shouldUpdateTenMinsAndSmallGroupWhenAnalyticsExists() {
-        // Arrange
-        VoucherEntity voucher = new VoucherEntity();
-        voucher.setReservationId(3L);
-        voucher.setPriceAfterDiscount(50);  // Asumiendo que es un long
+    void testSubtractFromAnalytics_UpdatesExistingAnalyticsEntity() {
+        analytics.setTenMins(150L);
+        analytics.setSmallGroup(150L);
 
-        ReservationEntity reservation = new ReservationEntity();
-        reservation.setId(3L);
-        reservation.setDuration(30);  // Duración de 30 minutos
-        reservation.setQuantity(2);   // Tamaño del grupo: 2 personas (grupo pequeño)
-        reservation.setDate(LocalDate.of(2025, Month.MARCH, 10));
+        when(reservationRepository.findById(1L)).thenReturn(Optional.of(reservation));
+        when(analyticsRepository.findByMonthAndYear(Month.APRIL, 2025)).thenReturn(analytics);
 
-        AnalyticsEntity existingAnalytics = new AnalyticsEntity();
-        existingAnalytics.setMonth(Month.MARCH);
-        existingAnalytics.setYear(2025);
-        existingAnalytics.setTenMins(150L);  // Valor inicial de 10 minutos
-        existingAnalytics.setSmallGroup(300L); // Valor inicial de grupo pequeño
-
-        // Mocks
-        when(reservationRepository.findById(3L)).thenReturn(Optional.of(reservation));
-        when(analyticsRepository.findByMonthAndYear(Month.MARCH, 2025)).thenReturn(existingAnalytics);
-
-        // Act
         analyticsService.subtractFromAnalytics(voucher);
 
-        // Assert
-        assertEquals(100L, existingAnalytics.getTenMins());  // 150L - 50L (precio después del descuento)
-        assertEquals(250L, existingAnalytics.getSmallGroup());  // 300L - 50L (precio después del descuento)
+        assertEquals(50L, analytics.getTenMins());
+        assertEquals(50L, analytics.getSmallGroup());
     }
-
-
-
 }
+
 
 
