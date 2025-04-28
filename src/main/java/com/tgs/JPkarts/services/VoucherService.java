@@ -2,6 +2,7 @@ package com.tgs.JPkarts.services;
 
 import com.tgs.JPkarts.entities.ReservationEntity;
 import com.tgs.JPkarts.entities.VoucherEntity;
+import com.tgs.JPkarts.repositories.AnalyticsRepository;
 import com.tgs.JPkarts.repositories.ReservationRepository;
 import com.tgs.JPkarts.repositories.VoucherRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +22,11 @@ public class VoucherService {
     @Autowired
     VoucherRepository voucherRepository;
     @Autowired
-    ReservationService reservationService;
-    @Autowired
     private ReservationRepository reservationRepository;
+    @Autowired
+    private AnalyticsService analyticsService;
+    @Autowired
+    private AnalyticsRepository analyticsRepository;
 
     public List<VoucherEntity> getAllVouchers() {return voucherRepository.findAll();}
 
@@ -33,6 +36,10 @@ public class VoucherService {
         setBasePrice(voucher, reservation);
         calcDiscounts(voucher, reservation);
         applyDiscounts(voucher);
+        if(analyticsRepository.findByMonthAndYear(reservation.getDate().getMonth(), reservation.getDate().getYear())==null){
+            analyticsService.createAnalytics(reservation.getDate().getMonth(), reservation.getDate().getYear());
+        }
+        analyticsService.addToAnalytics(voucher);
         return voucherRepository.save(voucher);
     }
 
@@ -74,6 +81,7 @@ public class VoucherService {
 
     public boolean deleteVoucherById(@PathVariable long id) throws Exception{
         try{
+            analyticsService.subtractFromAnalytics(voucherRepository.findById(id).get());
             reservationRepository.deleteById(id);
             return true;
         }

@@ -23,12 +23,12 @@ public class AnalyticsEntity {
     Month month;
     int year;
 
-    Long tenMins;
-    Long fifteenMins;
-    Long twentyMins;
+    Long tenMins = 0L;
+    Long fifteenMins = 0L;
+    Long twentyMins = 0L;
 
-    Long smallGroup;
-    Long mediumGroup;
-    Long bigGroup;
-    Long veryBigGroup;
+    Long smallGroup = 0L;
+    Long mediumGroup = 0L;
+    Long bigGroup = 0L;
+    Long veryBigGroup = 0L;
 }
