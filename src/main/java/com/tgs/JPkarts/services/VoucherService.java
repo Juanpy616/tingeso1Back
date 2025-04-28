@@ -23,10 +23,6 @@ public class VoucherService {
     VoucherRepository voucherRepository;
     @Autowired
     private ReservationRepository reservationRepository;
-    @Autowired
-    private AnalyticsService analyticsService;
-    @Autowired
-    private AnalyticsRepository analyticsRepository;
 
     public List<VoucherEntity> getAllVouchers() {return voucherRepository.findAll();}
 
@@ -77,7 +73,6 @@ public class VoucherService {
 
     public boolean deleteVoucherById(@PathVariable long id) throws Exception{
         try{
-            analyticsService.subtractFromAnalytics(voucherRepository.findById(id).get());
             reservationRepository.deleteById(id);
             return true;
         }

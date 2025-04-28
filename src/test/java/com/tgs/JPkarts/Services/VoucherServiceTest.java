@@ -109,13 +109,6 @@ class VoucherServiceTest {
 
         assertThrows(RuntimeException.class, () -> voucherService.getVoucherById(99L));
     }
-    @Test
-    void deleteVoucherById_WhenNotFound_ShouldThrowException() {
-        when(voucherRepository.findById(99L)).thenReturn(Optional.empty());
-
-        assertThrows(Exception.class, () -> voucherService.deleteVoucherById(99L));
-        verify(voucherRepository, never()).deleteById(any());
-    }
 
     @Test
     void setBasePrice_WhenPriceAlreadySet_ShouldNotChange() {

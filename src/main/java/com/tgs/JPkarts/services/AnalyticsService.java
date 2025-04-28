@@ -27,7 +27,7 @@ public class AnalyticsService {
     VoucherRepository voucherRepository;
 
     public List<AnalyticsEntity> getAllAnalytics() { return analyticsRepository.findAll();}
-
+/*
     //Cuando se crea un voucher, se suman sus ganancias al resumen
     public void addToAnalytics(VoucherEntity voucher) {
         ReservationEntity reservation = reservationRepository.findById(voucher.getReservationId()).get();
@@ -91,5 +91,5 @@ public class AnalyticsService {
         else{
             analyticsEntity.setVeryBigGroup(analyticsEntity.getVeryBigGroup() - voucher.getPriceAfterDiscount());
         }
-    }
+    }*/
 }
