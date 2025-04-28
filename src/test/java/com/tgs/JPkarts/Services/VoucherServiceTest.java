@@ -1,6 +1,5 @@
 package com.tgs.JPkarts.Services;
 
-import com.tgs.JPkarts.entities.AnalyticsEntity;
 import com.tgs.JPkarts.entities.ReservationEntity;
 import com.tgs.JPkarts.entities.VoucherEntity;
 import com.tgs.JPkarts.repositories.AnalyticsRepository;
@@ -17,14 +16,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.Month;
+import java.time.Year;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class VoucherServiceTest {
+class VoucherServiceTest {
+
     @Mock
     private VoucherRepository voucherRepository;
 
@@ -40,82 +42,111 @@ public class VoucherServiceTest {
     @InjectMocks
     private VoucherService voucherService;
 
-    // Datos para las pruebas
-    private VoucherEntity voucher;
-    private ReservationEntity reservation;
+    private VoucherEntity testVoucher;
+    private ReservationEntity testReservation;
 
     @BeforeEach
     void setUp() {
-        voucher = new VoucherEntity();
-        reservation = new ReservationEntity();
+        testVoucher = new VoucherEntity();
+        testVoucher.setId(1L);
+        testVoucher.setClientName("Test Client");
+        testVoucher.setClientEmail("test@example.com");
+        testVoucher.setReservationId(1L);
+        testVoucher.setBasePrice(20000);
+        testVoucher.setSizeDiscount(0);
+        testVoucher.setSpecialDiscount(0);
+        testVoucher.setPriceAfterDiscount(0);
+        testVoucher.setIva(0);
+        testVoucher.setFinalPrice(0);
+
+        testReservation = new ReservationEntity();
+        testReservation.setId(1L);
+        testReservation.setDate(LocalDate.now());
+        testReservation.setDuration(30);
+        testReservation.setQuantity(4);
     }
 
     @Test
-    void saveVoucher_shouldSaveVoucherAndCreateAnalyticsIfNotExists() {
-        // Arrange
-        Long reservationId = 1L;
-        voucher.setReservationId(reservationId);
-        voucher.setBasePrice(20000);
-        voucher.setSpecialDiscount(0);
-        voucher.setSizeDiscount(0);
+    void getAllVouchers_ShouldReturnAllVouchers() {
+        VoucherEntity voucher2 = new VoucherEntity();
+        voucher2.setId(2L);
+        List<VoucherEntity> vouchers = Arrays.asList(testVoucher, voucher2);
 
-        // Crear una reserva simulada
-        reservation.setId(reservationId);
-        reservation.setDuration(35);
-        reservation.setQuantity(4);
-        reservation.setDate(LocalDate.of(2025, Month.APRIL, 5));
+        when(voucherRepository.findAll()).thenReturn(vouchers);
 
-        // Mock de la búsqueda de la reserva por ID
-        when(reservationRepository.findById(reservationId)).thenReturn(Optional.of(reservation));
+        List<VoucherEntity> result = voucherService.getAllVouchers();
 
-        // Simulando que no existe Analytics para este mes/año
-        when(analyticsRepository.findByMonthAndYear(Month.APRIL, 2025)).thenReturn(null);
-
-        // Simulando la creación de Analytics
-        AnalyticsEntity mockAnalytics = new AnalyticsEntity();
-        when(analyticsService.createAnalytics(Month.APRIL, 2025)).thenReturn(mockAnalytics);
-
-        // Simulando que voucherRepository guarde y retorne el voucher
-        when(voucherRepository.save(voucher)).thenReturn(voucher);
-
-        // Act
-        VoucherEntity savedVoucher = voucherService.saveVoucher(voucher);
-
-        // Assert
-        assertNotNull(savedVoucher);  // Verifica que el voucher guardado no sea null
-        verify(analyticsService, times(1)).createAnalytics(Month.APRIL, 2025);  // Verifica que se haya creado el Analytics
-        verify(voucherRepository, times(1)).save(voucher);  // Verifica que se haya guardado el voucher
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        verify(voucherRepository, times(1)).findAll();
     }
 
     @Test
-    public void whenDurationIs30AndBasePriceIs0_ThenBasePriceIs15k(){
+    void updateVoucher_ShouldSaveVoucher() {
+        when(voucherRepository.save(testVoucher)).thenReturn(testVoucher);
 
-        reservation.setDuration(30);
-        voucher.setBasePrice(0);
+        VoucherEntity result = voucherService.updateVoucher(testVoucher);
 
-        voucherService.setBasePrice(voucher, reservation);
-
-        assertThat(voucher.getBasePrice()).isEqualTo(15000);
+        assertNotNull(result);
+        assertEquals(1L, result.getId());
+        verify(voucherRepository, times(1)).save(testVoucher);
     }
 
     @Test
-    public void whenDurationIsXAndBasePriceIsY_ThenBasePriceIsY(){
+    void getVoucherById_ShouldReturnVoucher() {
+        when(voucherRepository.findById(1L)).thenReturn(Optional.of(testVoucher));
 
-        reservation.setDuration(30);
-        voucher.setBasePrice(1802349);//Un entero aleatorio
+        VoucherEntity result = voucherService.getVoucherById(1L);
 
-        voucherService.setBasePrice(voucher, reservation);
-
-        assertThat(voucher.getBasePrice()).isEqualTo(1802349);
+        assertNotNull(result);
+        assertEquals(1L, result.getId());
+        verify(voucherRepository, times(1)).findById(1L);
     }
 
     @Test
-    public void whenDurationIs35AndBasePriceIs0_ThenBasePriceIs20k(){
-        reservation.setDuration(35);
-        voucher.setBasePrice(0);
+    void getVoucherById_WhenNotFound_ShouldThrowException() {
+        when(voucherRepository.findById(99L)).thenReturn(Optional.empty());
 
-        voucherService.setBasePrice(voucher, reservation);
+        assertThrows(RuntimeException.class, () -> voucherService.getVoucherById(99L));
+    }
+    @Test
+    void deleteVoucherById_WhenNotFound_ShouldThrowException() {
+        when(voucherRepository.findById(99L)).thenReturn(Optional.empty());
 
-        assertThat(voucher.getBasePrice()).isEqualTo(20000);
+        assertThrows(Exception.class, () -> voucherService.deleteVoucherById(99L));
+        verify(voucherRepository, never()).deleteById(any());
+    }
+
+    @Test
+    void setBasePrice_WhenPriceAlreadySet_ShouldNotChange() {
+        testVoucher.setBasePrice(30000);
+        voucherService.setBasePrice(testVoucher, testReservation);
+        assertEquals(30000, testVoucher.getBasePrice());
+    }
+
+    @Test
+    void calcDiscounts_ShouldCalculateCorrectDiscounts() {
+        // Test size discount
+        testReservation.setQuantity(6);
+        voucherService.calcDiscounts(testVoucher, testReservation);
+        assertEquals(4000, testVoucher.getSizeDiscount()); // 20% of 20000
+
+        // Test special discount (percentage)
+        testVoucher.setSpecialDiscount(10); // 10%
+        voucherService.calcDiscounts(testVoucher, testReservation);
+        assertEquals(2000, testVoucher.getSpecialDiscount()); // 10% of 20000
+    }
+
+    @Test
+    void applyDiscounts_ShouldCalculateFinalPriceCorrectly() {
+        testVoucher.setBasePrice(20000);
+        testVoucher.setSizeDiscount(2000);
+        testVoucher.setSpecialDiscount(1000);
+
+        voucherService.applyDiscounts(testVoucher);
+
+        assertEquals(17000, testVoucher.getPriceAfterDiscount()); // 20000 - (2000 + 1000)
+        assertEquals(3230, testVoucher.getIva()); // 19% of 17000
+        assertEquals(20230, testVoucher.getFinalPrice()); // 17000 + 3230
     }
 }

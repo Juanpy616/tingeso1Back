@@ -36,9 +36,6 @@ public class VoucherService {
         setBasePrice(voucher, reservation);
         calcDiscounts(voucher, reservation);
         applyDiscounts(voucher);
-        if(analyticsRepository.findByMonthAndYear(reservation.getDate().getMonth(), reservation.getDate().getYear())==null){
-            analyticsService.createAnalytics(reservation.getDate().getMonth(), reservation.getDate().getYear());
-        }
         analyticsService.addToAnalytics(voucher);
         return voucherRepository.save(voucher);
     }

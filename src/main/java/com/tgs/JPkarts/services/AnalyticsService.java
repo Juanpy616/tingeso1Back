@@ -20,12 +20,6 @@ public class AnalyticsService {
     @Autowired
     ReservationRepository reservationRepository;
 
-    public AnalyticsEntity createAnalytics(Month month, int year) {
-        AnalyticsEntity analyticsEntity = new AnalyticsEntity();
-        analyticsEntity.setMonth(month);
-        analyticsEntity.setYear(year);
-        return analyticsRepository.save(analyticsEntity);
-    }
     public List<AnalyticsEntity> getAllAnalytics() { return analyticsRepository.findAll();}
 
     //Cuando se crea un voucher, se suman sus ganancias al resumen
@@ -92,9 +86,4 @@ public class AnalyticsService {
             analyticsEntity.setVeryBigGroup(analyticsEntity.getVeryBigGroup() - voucher.getPriceAfterDiscount());
         }
     }
-
-
-
-
-
 }
