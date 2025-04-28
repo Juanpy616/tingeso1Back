@@ -36,7 +36,6 @@ public class VoucherService {
         setBasePrice(voucher, reservation);
         calcDiscounts(voucher, reservation);
         applyDiscounts(voucher);
-        analyticsService.addToAnalytics(voucher);
         return voucherRepository.save(voucher);
     }
 
